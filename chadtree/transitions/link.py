@@ -40,7 +40,7 @@ async def _link(state: State, is_visual: bool) -> Optional[Stage]:
         for selected in selection:
             display = display_path(selected, state=state)
             if child := await Nvim.input(
-                question=LANG("link", src=display), default=""
+                question=LANG("link", src=display), default=selected.name
             ):
                 try:
                     dst = await resolve(parent / child, strict=False)
