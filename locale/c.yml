@@ -61,7 +61,7 @@
   Link ${src} ->:
 
 "mime_warn": |-
-  ${name} have possible mimetype ${mime}, continue?
+  ${name} with mimetype ${mime} is potentially non-unicode, continue?
 
 "new_filter": |-
   New Filter:

@@ -1,7 +1,8 @@
 from contextlib import suppress
+from json import dumps
 from mimetypes import guess_type
 from os.path import getsize, normpath
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from posixpath import sep
 from typing import AsyncContextManager, Optional, cast
 
@@ -24,6 +25,8 @@ from .wm import (
     new_window,
     resize_fm_windows,
 )
+
+_KB = 1000
 
 
 async def _show_file(*, state: State, click_type: ClickType) -> None:
@@ -59,9 +62,11 @@ async def _show_file(*, state: State, click_type: ClickType) -> None:
                 last_used=state.window_order,
                 win_local=state.settings.win_actual_opts,
                 open_left=not state.settings.open_left,
-                width=None
-                if len(non_fm_windows)
-                else await Nvim.opts.get(int, "columns") - state.width - 1,
+                width=(
+                    None
+                    if len(non_fm_windows)
+                    else await Nvim.opts.get(int, "columns") - state.width - 1
+                ),
             )
 
             await Window.set_current(win)
@@ -93,10 +98,19 @@ async def open_file(
     mime, _ = guess_type(path.name, strict=False)
     m_type, _, _ = (mime or "").partition(sep)
 
+    text, size = True, 0
     with suppress(OSError):
-        size = getsize(path)
+        with Path(path).open() as fd:
+            try:
+                fd.readline(_KB)
+            except UnicodeDecodeError:
+                text = False
 
-    question = LANG("mime_warn", name=path.name, mime=str(mime))
+        # size = getsize(fd.fileno())
+
+    question = LANG(
+        "mime_warn", name=dumps(path.name, ensure_ascii=False), mime=str(mime)
+    )
 
     go = (
         await Nvim.confirm(
@@ -104,8 +118,11 @@ async def open_file(
             answers=LANG("ask_yesno"),
             answer_key={1: True, 2: False},
         )
-        if m_type in state.settings.mime.warn
-        and path.suffix not in state.settings.mime.allow_exts
+        if (
+            m_type in state.settings.mime.warn
+            and path.suffix not in state.settings.mime.allow_exts
+        )
+        or not text
         else True
     )
 
