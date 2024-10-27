@@ -146,7 +146,8 @@ async def _go(loop: AbstractEventLoop, client: RPClient) -> None:
                     async with lock:
                         if stage := await handler(state_ref.val, *params):
                             state_ref.val = stage.state
-                            focus_ref.val = stage.focus
+                            if stage.focus:
+                                focus_ref.val = stage.focus
                             event.set()
             else:
                 assert False, (method, params)
