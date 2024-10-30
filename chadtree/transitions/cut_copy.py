@@ -58,11 +58,13 @@ async def _operation(
             s: d for s, d in pre_operations.items() if await exists(d, follow=False)
         }
 
+        asked = False
         new_operations: MutableMapping[PurePath, PurePath] = {}
         while pre_existing:
             source, dest = pre_existing.popitem()
             resp = await Nvim.input(question=LANG("path_exists_err"), default=dest.name)
             new_dest = dest.parent / resp if resp else None
+            asked = True
 
             if not new_dest:
                 pre_existing[source] = dest
@@ -92,49 +94,50 @@ async def _operation(
                 for s, d in sorted(operations.items(), key=lambda t: pathsort_key(t[0]))
             )
 
-            question = LANG("confirm op", operation=op_name, paths=msg)
-            ans = await Nvim.confirm(
-                question=question,
-                answers=LANG("ask_yesno"),
-                answer_key={1: True, 2: False},
-            )
+            if not asked:
+                question = LANG("confirm op", operation=op_name, paths=msg)
+                ans = await Nvim.confirm(
+                    question=question,
+                    answers=LANG("ask_yesno"),
+                    answer_key={1: True, 2: False},
+                )
 
-            if not ans:
-                return None
+                if not ans:
+                    return None
+
+            try:
+                await action(operations)
+            except Exception as e:
+                await Nvim.write(e, error=True)
+                return await refresh(state)
             else:
-                try:
-                    await action(operations)
-                except Exception as e:
-                    await Nvim.write(e, error=True)
-                    return await refresh(state)
-                else:
-                    parents = {
-                        p.parent for p in chain(operations.keys(), operations.values())
-                    }
-                    invalidate_dirs = parents
-                    index = state.index | parents
-                    new_selection = {*operations.values()}
-                    new_state = await forward(
-                        state,
-                        index=index,
-                        selection=new_selection if is_move else selection,
-                        invalidate_dirs=invalidate_dirs,
-                    )
-                    focus = next(
-                        iter(sorted(new_selection, key=pathsort_key)),
-                        None,
-                    )
+                parents = {
+                    p.parent for p in chain(operations.keys(), operations.values())
+                }
+                invalidate_dirs = parents
+                index = state.index | parents
+                new_selection = {*operations.values()}
+                new_state = await forward(
+                    state,
+                    index=index,
+                    selection=new_selection if is_move else selection,
+                    invalidate_dirs=invalidate_dirs,
+                )
+                focus = next(
+                    iter(sorted(new_selection, key=pathsort_key)),
+                    None,
+                )
 
-                    if is_move:
-                        await kill_buffers(
-                            last_used=new_state.window_order,
-                            paths=selection,
-                            reopen={},
-                        )
-                        await lsp_moved(operations)
-                    else:
-                        await lsp_created(new_selection)
-                    return Stage(new_state, focus=focus)
+                if is_move:
+                    await kill_buffers(
+                        last_used=new_state.window_order,
+                        paths=selection,
+                        reopen={},
+                    )
+                    await lsp_moved(operations)
+                else:
+                    await lsp_created(new_selection)
+                return Stage(new_state, focus=focus)
 
 
 @rpc(blocking=False)
