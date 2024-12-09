@@ -88,7 +88,7 @@ def _update(
 
 async def redraw(state: State, focus: Optional[PurePath]) -> Derived:
     derived = await _derived(state)
-    focus_row = derived.path_row_lookup.get(focus) if focus else None
+    focus_row = derived.path_row_lookup.get(focus) if state.follow and focus else None
     buf_name = _buf_name(state.root.path)
 
     ns = await Nvim.create_namespace(_NS)
