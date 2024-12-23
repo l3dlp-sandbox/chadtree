@@ -53,7 +53,8 @@ async def is_fm_window(win: Window) -> bool:
 async def find_windows_in_tab(
     last_used: Mapping[ExtData, None], no_secondary: bool
 ) -> AsyncIterator[Window]:
-    ordering = {win_id: idx for idx, win_id in enumerate(reversed(last_used.keys()))}
+    keys = cast(Sequence[ExtData], last_used.keys())
+    ordering = {win_id: idx for idx, win_id in enumerate(reversed(keys))}
     tab = await Tabpage.get_current()
     wins = await tab.list_wins()
 
