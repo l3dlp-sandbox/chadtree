@@ -1,6 +1,6 @@
 (function(_)
   local validate = (function()
-    if not vim.api.nvim_call_function("has", {"nvim-0.11"}) then
+    if vim.api.nvim_call_function("has", {"nvim-0.11"}) == 0 then
       return vim.validate
     else
       return function(spec)
