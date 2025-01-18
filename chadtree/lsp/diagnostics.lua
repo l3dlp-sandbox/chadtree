@@ -1,12 +1,24 @@
 (function(_)
+  local validate = (function()
+    if not vim.api.nvim_call_function("has", {"nvim-0.11"}) then
+      return vim.validate
+    else
+      return function(spec)
+        for name, args in pairs(spec) do
+          vim.validate(name, unpack(args))
+        end
+      end
+    end
+  end)()
+
   if vim.diagnostic then
     local diagnostics = vim.diagnostic.get(nil, nil)
-    vim.validate({diagnostics = {diagnostics, "table"}})
+    validate({diagnostics = {diagnostics, "table"}})
     local acc = {}
     for _, row in pairs(diagnostics) do
       local buf = row.bufnr
       local severity = tostring(row.severity)
-      vim.validate(
+      validate(
         {
           buf = {buf, "number"},
           row_severity = {row.severity, "number"}
