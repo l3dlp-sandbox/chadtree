@@ -1,7 +1,7 @@
 from contextlib import suppress
 from json import dumps
 from mimetypes import guess_type
-from os.path import getsize, normpath
+from os.path import getsize, normpath, relpath
 from pathlib import Path, PurePath
 from posixpath import sep
 from typing import AsyncContextManager, Optional, cast
@@ -86,7 +86,8 @@ async def _show_file(*, state: State, click_type: ClickType) -> None:
             if buf:
                 await win.set_buf(buf)
             else:
-                escaped = await Nvim.fn.fnameescape(str, normpath(path))
+                cwd = await Nvim.getcwd()
+                escaped = await Nvim.fn.fnameescape(str, relpath(normpath(path), cwd))
                 await Nvim.exec(f"edit! {escaped}")
 
             await resize_fm_windows(last_used=state.window_order, width=state.width)
