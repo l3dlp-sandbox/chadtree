@@ -75,6 +75,7 @@ class _UserTheme:
 class _UserView:
     open_direction: _OpenDirection
     width: int
+    width_step: int
     sort_by: Sequence[Sortby]
     time_format: str
     window_options: Mapping[str, Union[bool, str]]
@@ -169,6 +170,7 @@ async def initial(specs: Iterable[RPCallable]) -> Settings:
             version_ctl=options.version_control,
             view=view_opts,
             width=view.width,
+            width_step=view.width_step,
             win_actual_opts=win_actual_opts,
             win_local_opts=view.window_options,
             xdg=config.xdg,

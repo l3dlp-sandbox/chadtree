@@ -36,6 +36,7 @@ class Settings:
     version_ctl: VersionCtlOpts
     view: ViewOptions
     width: int
+    width_step: int
     win_actual_opts: Mapping[str, Union[bool, str]]
     win_local_opts: Mapping[str, Union[bool, str]]
     min_diagnostics_severity: int

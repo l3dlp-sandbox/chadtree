@@ -162,6 +162,7 @@ view:
     - file_name
   time_format: "%Y-%m-%d %H:%M"
   width: 40
+  width_step: 10
   window_options:
     cursorline: true
     foldenable: false
