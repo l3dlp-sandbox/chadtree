@@ -302,6 +302,16 @@ How big is CHADTree when initially opened?
 40
 ```
 
+#### `chadtree_settings.view.width_step`
+
+How much is CHADTree resized in a single step?
+
+**default:**
+
+```json
+10
+```
+
 #### `chadtree_settings.view.window_options`
 
 Set of window local options to for CHADTree windows

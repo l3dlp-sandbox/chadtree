@@ -17,8 +17,9 @@ async def _resize(
     if not await is_fm_window(win):
         return None
     else:
+        step = state.settings.width_step
         old_width = await win.get_width()
-        new_width = max(direction(old_width, 10), 1)
+        new_width = max(direction(old_width, step), 1)
         new_state = await forward(state, width=new_width)
         await resize_fm_windows(new_state.window_order, width=new_state.width)
         return Stage(new_state)
